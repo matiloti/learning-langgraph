@@ -8,6 +8,9 @@ Design principles for small model prompts:
 4. Keep it FOCUSED — one job per prompt, no ambiguity
 5. Use SIMPLE language — avoid complex phrasing
 6. Add GUARDRAILS — tell the model what NOT to do
+7. CRITICAL INFO FIRST AND LAST — small models lose info in the middle
+   (lost-in-the-middle effect is stronger in smaller models)
+8. CONSTRAIN OUTPUT FORMAT per step — tighter format = more reliable
 """
 
 import os

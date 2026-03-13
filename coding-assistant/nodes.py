@@ -236,7 +236,14 @@ def _execute_tools(state: AgentState, tools_by_name: dict) -> dict:
         args = tc["args"]
         try:
             if name not in tools_by_name:
-                raise KeyError(f"Unknown tool: {name}. Available: {', '.join(tools_by_name.keys())}")
+                # Self-correction hint: list available tools so the model
+                # can retry with the right name (small models often hallucinate
+                # tool names like "file_read" instead of "read_file")
+                available = ", ".join(tools_by_name.keys())
+                raise KeyError(
+                    f"Unknown tool '{name}'. Did you mean one of: {available}? "
+                    f"Please retry with a valid tool name."
+                )
             observation = tools_by_name[name].invoke(args)
             results.append(ToolMessage(content=str(observation), tool_call_id=tc["id"]))
 
@@ -245,8 +252,16 @@ def _execute_tools(state: AgentState, tools_by_name: dict) -> dict:
                 fp = args["filepath"]
                 if fp not in working_files:
                     working_files.append(fp)
+        except KeyError as e:
+            # Tool name errors — give corrective feedback for self-correction
+            results.append(ToolMessage(content=str(e), tool_call_id=tc["id"]))
         except Exception as e:
-            error_msg = f"Error calling {name}: {e}"
+            # Execution errors — include the error type for better self-correction
+            error_type = type(e).__name__
+            error_msg = (
+                f"Error ({error_type}) calling {name}: {e}\n"
+                f"Fix the arguments and retry."
+            )
             results.append(ToolMessage(content=error_msg, tool_call_id=tc["id"]))
 
     # Build the tool chain: AI message + tool results

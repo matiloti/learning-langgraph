@@ -210,20 +210,33 @@ codeassist --model MODEL --base-url URL --workspace PATH --temperature FLOAT
 
 ## Recommended Models
 
-Tested and ranked for coding assistant tasks:
+Ranked by coding assistant performance (based on HumanEval, SWE-Bench, and tool calling reliability):
 
-| Model | Size | Strengths | Tool Calling | Recommended |
-|-------|------|-----------|-------------|-------------|
-| `qwen2.5-coder:14b` | 14B | Best overall for coding, good tool use | Native | Yes |
-| `qwen2.5-coder:7b` | 7B | Good coding, fast, lower VRAM | Native | Budget pick |
-| `deepseek-coder-v2:16b` | 16B | Strong generation, good reasoning | Good | Yes |
-| `codellama:13b` | 13B | Solid coding, well-known | Basic | Okay |
-| `qwen2.5:14b` | 14B | Good general purpose + code | Native | General use |
+### Tier 1: Best Picks
+
+| Model | Size | HumanEval | Tool Calling | Notes |
+|-------|------|-----------|-------------|-------|
+| `qwen2.5-coder:14b` | 14B | 88.4% | Native | **Default choice.** Best overall coding + tool use |
+| `qwen2.5-coder:7b` | 7B | 88.4% | Native | Same architecture, lower VRAM. Great budget pick |
+| `qwen3-coder-next` | 80B (3B active) | SWE-Bench #1 | Native | MoE — only 3B active params, purpose-built for agentic coding |
+
+### Tier 2: Strong Alternatives
+
+| Model | Size | Notes |
+|-------|------|-------|
+| `deepseek-coder-v2:16b` | 16B (2.4B active) | MoE, strong at math/reasoning |
+| `llama3.1:8b` | 8B | Best reliability for function/tool calling specifically |
+| `devstral:24b` | 24B | Mistral's agentic coding model, runs on RTX 4090 / 32GB Mac |
+| `qwen3.5:9b` | 9B | Thinking + non-thinking modes, 262K context |
+
+### Avoid
+- `codellama:7b` — ~30% HumanEval, severely outdated
 
 **VRAM Requirements:**
 - 7B models: ~6GB VRAM
-- 13-14B models: ~10-12GB VRAM
-- 16B models: ~12-14GB VRAM
+- 9-14B models: ~10-12GB VRAM
+- 16-24B models: ~12-16GB VRAM
+- MoE models (qwen3-coder-next): ~6-8GB VRAM despite large total params
 
 ## Project Structure
 
