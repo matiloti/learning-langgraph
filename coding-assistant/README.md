@@ -287,6 +287,19 @@ Every prompt follows these rules for small models:
 
 Complex requests are broken into tasks of 1-3 tool calls each. This means the model only needs to focus on one small thing at a time, dramatically improving reliability with smaller models.
 
+### 6. Observation Masking
+
+Inspired by [JetBrains Research](https://blog.jetbrains.com/research/2025/12/efficient-context-management/): agent conversation turns are ~80% tool output. We mask/truncate tool observations while preserving AI reasoning and action history in full. This matches LLM-based summarization quality while being instant and free.
+
+```python
+# Before masking: read_file returns 500 lines → 2000 tokens
+# After masking: first 5 + last 5 lines + "[... 490 lines masked ...]" → 100 tokens
+```
+
+### 7. Context Isolation
+
+Each task in the plan gets focused context — only the task description, relevant files, and recent history. Inspired by the [Deep Agents](https://github.com/langchain-ai/deepagents) subagent isolation pattern and the [ACE framework](https://arxiv.org/abs/2510.04618) which showed that DeepSeek-V3.1 (a smaller model) matched GPT-4.1 performance through better context engineering alone.
+
 ## Design Decisions and Tradeoffs
 
 | Decision | Rationale |
@@ -329,12 +342,23 @@ This is a known issue with small models. The assistant's design mitigates this b
 
 This project draws from several sources:
 
-- **[LangGraph Documentation](https://langchain-ai.github.io/langgraph/)** — StateGraph patterns, conditional edges, checkpointing
-- **[Aider](https://github.com/paul-gauthier/aider)** — Terminal UI patterns for coding assistants, edit format design
-- **[Open Interpreter](https://github.com/OpenInterpreter/open-interpreter)** — CLI UX for AI coding, tool execution patterns
-- **[Mentat](https://github.com/AbanteAI/mentat)** — Context management for coding assistants
-- **[SWE-agent](https://github.com/princeton-nlp/SWE-agent)** — Scaffolding techniques for LLM-based coding agents
-- **[LangGraph Examples](https://github.com/langchain-ai/langgraph/tree/main/examples)** — Official agent patterns
+### Projects
+- **[LangGraph](https://langchain-ai.github.io/langgraph/)** — StateGraph patterns, conditional edges, checkpointing
+- **[Open SWE](https://github.com/langchain-ai/open-swe)** — LangGraph-based Manager → Planner → Programmer pipeline architecture
+- **[Deep Agents](https://github.com/langchain-ai/deepagents)** — TodoListMiddleware, SummarizationMiddleware, subagent isolation pattern
+- **[LangGraph CodeAct](https://github.com/langchain-ai/langgraph-codeact)** — CodeAct pattern (LLM writes executable code instead of JSON tool calls)
+- **[Aider](https://github.com/Aider-AI/aider)** — Gold standard terminal UI, repository map, auto-commits, multi-mode chat
+- **[Goose](https://github.com/block/goose)** — Block's 30k+ star agent, MCP-first extensibility, multi-model configuration
+- **[Open Interpreter](https://github.com/OpenInterpreter/open-interpreter)** — Natural language CLI, streaming output patterns
+- **[ollama-code](https://github.com/tcsenpai/ollama-code)** — Privacy-first CLI coding agent built specifically for Ollama
+- **[Rich](https://github.com/Textualize/rich)** — Terminal formatting library used for the UI
+
+### Research Papers
+- **[ACE Framework](https://arxiv.org/abs/2510.04618)** — Showed DeepSeek-V3.1 matched GPT-4.1 through context engineering alone (59.4% vs 60.3% on AppWorld)
+- **[Confucius Code Agent](https://arxiv.org/pdf/2512.10398)** — 59% on SWE-Bench-Pro: "principled scaffolding can substantially amplify the same underlying LLM"
+- **[OpenDev](https://arxiv.org/html/2603.05344v1)** — Four-level hierarchy for compound AI coding systems, scaffolding/harness phase separation
+- **[JetBrains Observation Masking](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)** — Truncating tool output saves ~60% context while matching LLM summarization quality
+- **[Anthropic Context Engineering Guide](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)** — Write/Select/Compress/Isolate context framework
 
 ## License
 
